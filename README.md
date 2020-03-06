@@ -58,9 +58,9 @@ Screenshots are shown below, more steps coming soon.
 - Search for hashicorp and choose Credential Type "HashiCorp Vault Signed SSH"
 - Put Vault address and a Role ID and Secret ID. These were saved in the `/home/vagrant/assets` directory in the `roleid.json` and `secretid.json` file.
 
-![AppRole Auth parameters][assets/credential1.png]
+![AppRole Auth parameters](assets/credential1.png)
 
-![Getting the Pass test][assets/credential2.png]
+![Getting the Pass test](assets/credential2.png)
 
 **Vault Audit entries 
 To review corresponding Vault audit entries, please use the commands below:
