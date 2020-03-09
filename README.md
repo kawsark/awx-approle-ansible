@@ -18,17 +18,33 @@ chmod +x setup-vault.sh
 ```
 
 ### Testing on an existing Docker install
-To test the modified version of Vault credentials plugin on an existing Docker based AWX deployment, please use the following steps:
+To test the modified version of Vault credentials plugin on an existing Docker based AWX deployment, you can inject the updated `hashivault.py` file in a new running container, or build a new `awx_web` image using the provided [Dockerfile](assets/Dockerfile). Both methods are outlined below.
+
+#### Method 1. Copying hashivault.py into awx_web container
 ```
-# Run from the root of awx/ repo:
-docker rm awx_web
-docker rm awx_task
+# Run from the root of awx/ repo, stop the awx_web container:
+docker rm -f awx_web
+docker rm -f awx_task
 cd awx/installer
 /usr/local/bin/ansible-playbook -i inventory install.yml
 
 # Run from the root of this repo:
 docker cp assets/hashivault.py.v1 awx_task:/var/lib/awx/venv/awx/lib/python3.6/site-packages/awx/main/credential_plugins/hashivault.py
 docker cp assets/hashivault.py.v1 awx_web:/var/lib/awx/venv/awx/lib/python3.6/site-packages/awx/main/credential_plugins/hashivault.py
+```
+
+#### Method 2. Building a Dockerfile
+The steps below outline building a new `awx_web` image with the provided [Dockerfile](assets/Dockerfile).
+**Note:** Please substitute the version `9.2.0` with the version you want.
+```
+# Run from the root of this repo:
+cd assets
+sudo docker build -t ansible/awx_web:9.2.0 .
+
+# Run from the root of awx/ repo, stop the awx_web container:
+sudo docker rm -f awx_web
+cd awx/installer
+/usr/local/bin/ansible-playbook -i inventory install.yml
 ```
 
 Please continue with the **Test AppRole Authentication** section

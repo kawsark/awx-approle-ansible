@@ -41,6 +41,10 @@ git clone https://github.com/ansible/awx.git
 chown -R ${user}:${user} ${home}/awx/
 chown -R ${user}:${user} ${home}/assets/
 
+echo "[Setup] - Building updated Dockerfile"
+cd ${home}/assets/
+sudo docker build -t ansible/awx_web:9.2.0 .
+
 echo "[Setup] - Copying updated inventory file"
 cd ${home}/awx/installer
 cp inventory inventory.backup
@@ -50,9 +54,9 @@ cp ${home}/assets/hashivault.py.v1 ${home}/awx/awx/main/credential_plugins/hashi
 echo "[Setup] - Starting playbook install"
 grep -v '^#' inventory | grep -v '^$'
 /usr/local/bin/ansible-playbook -i inventory install.yml
-echo "[Setup] - Copying updated version of hashivault.py to awx_web and awx_task"
-docker cp ${home}/assets/hashivault.py.v1 awx_task:/var/lib/awx/venv/awx/lib/python3.6/site-packages/awx/main/credential_plugins/hashivault.py
-docker cp ${home}/assets/hashivault.py.v1 awx_web:/var/lib/awx/venv/awx/lib/python3.6/site-packages/awx/main/credential_plugins/hashivault.py
+#echo "[Setup] - Copying updated version of hashivault.py to awx_web and awx_task"
+#docker cp ${home}/assets/hashivault.py.v1 awx_task:/var/lib/awx/venv/awx/lib/python3.6/site-packages/awx/main/credential_plugins/hashivault.py
+#docker cp ${home}/assets/hashivault.py.v1 awx_web:/var/lib/awx/venv/awx/lib/python3.6/site-packages/awx/main/credential_plugins/hashivault.py
 
 echo "[Setup] - Starting Dev vault instance on Docker"
 docker run -d --name=vault -p 8200:8200 --cap-add=IPC_LOCK -e 'VAULT_DEV_ROOT_TOKEN_ID=root' --network="awxcompose_default" vault
