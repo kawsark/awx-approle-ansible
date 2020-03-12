@@ -43,7 +43,22 @@ chown -R ${user}:${user} ${home}/assets/
 
 echo "[Setup] - Building updated Dockerfile"
 cd ${home}/assets/
-sudo docker build -t ansible/awx_web:9.2.0 .
+tags=$(curl -s https://hub.docker.com/v2/repositories/ansible/awx_web/tags | jq -r .results[].name | sort -r | tr '\n' ' ')
+most_recent=$(echo $tags | awk '{print $2}')
+if [ ! -z $most_recent ]; then
+  echo "[Setup] - Using Docker image: ansible/awx_web:$most_recent"
+else
+  most_recent="9.3.0"
+  echo "[Setup] - Could not determine most recent image. Using ansible/awx_web:$most_recent"
+fi
+echo "[Setup] - Building Dockerfile"
+cat <<EOF > Dockerfile
+FROM ansible/awx_web:$most_recent
+COPY ./hashivault.py.v1 /var/lib/awx/venv/awx/lib/python3.6/site-packages/awx/main/credential_plugins/hashivault.py
+EOF
+echo "[Setup] - Dockerfile contents"
+cat Dockerfile
+sudo docker build -t ansible/awx_web:$most_recent .
 
 echo "[Setup] - Copying updated inventory file"
 cd ${home}/awx/installer

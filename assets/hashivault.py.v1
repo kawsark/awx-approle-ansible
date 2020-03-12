@@ -106,26 +106,24 @@ hashi_ssh_inputs['metadata'] = [{
 }]
 hashi_ssh_inputs['required'].extend(['public_key', 'role'])
 
+
 def handle_auth(**kwargs):
-    result = None
+    token = None
 
-    if bool(kwargs.get('token')):
-      result = kwargs['token']
+    if kwargs.get('token'):
+        token = kwargs['token']
+    elif kwargs.get('role_id') and kwargs.get('secret_id'):
+        token = approle_auth(**kwargs)
     else:
-      if bool(kwargs.get('role_id')) and bool(kwargs.get('secret_id')):
-        result = approle_auth(**kwargs)
-      else:
-        raise Exception('Either Vault token or Auth parameters must be set')
+        raise Exception('Either token or AppRole parameters must be set')
 
-    return result
+    return token
+
 
 def approle_auth(**kwargs):
     role_id = kwargs['role_id']
     secret_id = kwargs['secret_id']
-    auth_path = "approle"
-
-    if bool(kwargs.get('auth_path')):
-      auth_path = kwargs.get('auth_path', "approle")
+    auth_path = kwargs.get('auth_path') or 'approle'
 
     url = urljoin(kwargs['url'], 'v1')
     cacert = kwargs.get('cacert', None)
@@ -142,6 +140,7 @@ def approle_auth(**kwargs):
     resp.raise_for_status()
     token = resp.json()['auth']['client_token']
     return token
+
 
 def kv_backend(**kwargs):
     token = handle_auth(**kwargs)
